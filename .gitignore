@@ -10,11 +10,11 @@
 # general
 #########
 
-*/[Bb]uild/
-*/[Oo]bj/
+[Bb]uild/
+[Oo]bj/
 *.o
-*/[Dd]ebug*/
-*/[Rr]elease*/
+[Dd]ebug*/
+[Rr]elease*/
 *.mode*
 *.app/
 *.pyc
