@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "${workspaceRoot}/../../../../libs/openFrameworks"
+		},
+		{
+			"path": "${workspaceRoot}/../../../../addons"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"deque": "cpp",
+			"list": "cpp",
+			"string": "cpp",
+			"vector": "cpp",
+			"hash_map": "cpp",
+			"array": "cpp",
+			"hashtable": "cpp",
+			"forward_list": "cpp",
+			"unordered_map": "cpp",
+			"string_view": "cpp",
+			"initializer_list": "cpp",
+			"regex": "cpp"
+		}
+	}
+}
