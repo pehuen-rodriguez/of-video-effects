@@ -8,47 +8,47 @@
 
 class ofApp : public ofBaseApp{
   public:
+    // COMMON ///////////////
     void setup();
     void update();
     void draw();
-    //////////////
     void keyPressed(int key);
-    void keyReleased(int key);
-    void mouseMoved(int x, int y);
-    //////////////
+
+    // VIDEO ////////////////
     ofVideoGrabber vidGrabber;
     float camWidth;
     float camHeight;
     float camDrawWidth;
     float camDrawHeight;
+    float videoAspectRatio;
     float xCamDrawOffset;
     float yCamDrawOffset;
-    float videoAspectRatio;
-    //////////////
+
+    // PROCESSES ////////////
     void setupProcessingChain();
     ofxPostProcessing post;
-    //////////////
     ofxPostGlitch	myGlitch;
-    // ofFbo glitchFbo;
     ofFbo myFbo;
-    //////////////
+
+    // FILTERS //////////////
     void setupFilteringChain();
-    int currentFilter;
+    void advanceFilter();
+    void resetFilter();
     vector<AbstractFilter *> filters;
     AbstractFilter * filter1;
     AbstractFilter * filter2;
     AbstractFilter * filter3;
-    //////////////
-    float sliderX;
-    float sliderY;
-    //////////////
-    ofxOscReceiver receiver;
-    void advanceFilter();
-    void checkMessages();
-    void resetFilter();
-    bool filterReseted;
-
     Abstract3x3ConvolutionFilter * convolutionFilter1;
     Abstract3x3ConvolutionFilter * convolutionFilter2;
     Abstract3x3ConvolutionFilter * convolutionFilter3;
+    bool filterReseted;
+    int currentFilter;
+
+    // OSC //////////////////
+    void checkMessages();
+    ofxOscReceiver receiver;
+    float sliderX;
+    float sliderY;
+    std::string address;
+    float value;
 };

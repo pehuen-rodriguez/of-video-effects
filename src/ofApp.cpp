@@ -1,11 +1,12 @@
 #include "ofApp.h"
 
-//--------------------------------------------------------------
+// COMMON ///////////////
 void ofApp::setup()
 {
   ofDisableArbTex();
   ofEnableSmoothing();
   ofEnableAlphaBlending();
+  ofSetVerticalSync(true);
 
   camWidth = 1280;
   camHeight = 720;
@@ -20,24 +21,16 @@ void ofApp::setup()
   vidGrabber.setDesiredFrameRate(30);
   vidGrabber.initGrabber(camWidth, camHeight);
 
-  // glitchFbo.allocate(camDrawWidth, camDrawHeight);
-  // myFbo.allocate(camDrawWidth, camDrawHeight);
-  // myGlitch.setup(&myFbo);
-
   setupProcessingChain();
   setupFilteringChain();
-  ofSetVerticalSync(true);
 
   receiver.setup(17024);
-}
 
-//--------------------------------------------------------------
+  address = "no_address";
+  value = 0.0;
+}
 void ofApp::update()
 {
-  // myFbo.begin();
-  //   vidGrabber.draw(xCamDrawOffset, 0, camDrawWidth, camDrawHeight);
-  // myFbo.end();
-
   vidGrabber.update();
   checkMessages();
   if (!filterReseted)
@@ -45,43 +38,43 @@ void ofApp::update()
     resetFilter();
   }
 }
-
-//--------------------------------------------------------------
 void ofApp::draw()
 {
   post.begin();
-  filters[currentFilter]->begin();
-  vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
-  filters[currentFilter]->end();
+    filters[currentFilter]->begin();
+      vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
+    filters[currentFilter]->end();
   post.end();
-  // ofSetColor(255);
-  // ofDrawBitmapString("Filtro: " + filters[currentFilter]->getName(), ofPoint(40, 20));
-}
 
-//--------------------------------------------------------------
+  ofDrawBitmapString("For address: " + address, 100, 100);
+  ofDrawBitmapString("Value was: " + ofToString(value), 100, 110);
+}
 void ofApp::keyPressed(int key)
 {
+  // 0-8 ////////////////////
   unsigned idx = key - '0';
-  if (idx < post.size())
+  if (idx < post.size()) 
   {
     post[idx]->setEnabled(!post[idx]->getEnabled());
   }
 
+  // ADVANCE FILTER AND FS //
   if (key == ' ')
   {
     advanceFilter();
   }
+  if (key == 'f')
+  {
+    ofSetFullscreen(true);
+  }
 
+  // TOGGLE FXS /////////////
   if (key == 'a')
     myGlitch.toggleFx(OFXPOSTGLITCH_CONVERGENCE);
   if (key == 's')
     myGlitch.toggleFx(OFXPOSTGLITCH_GLOW);
   if (key == 'd')
     myGlitch.toggleFx(OFXPOSTGLITCH_SHAKER);
-  if (key == 'f')
-  {
-    ofSetFullscreen(true);
-  }
   if (key == 'g')
     myGlitch.toggleFx(OFXPOSTGLITCH_TWIST);
   if (key == 'h')
@@ -111,16 +104,7 @@ void ofApp::keyPressed(int key)
     myGlitch.toggleFx(OFXPOSTGLITCH_CR_GREENINVERT);
 }
 
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key)
-{
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y)
-{
-}
-
+// PROCESSES ////////////
 void ofApp::setupProcessingChain()
 {
   post.init(ofGetWidth(), ofGetHeight());
@@ -135,6 +119,7 @@ void ofApp::setupProcessingChain()
   post.createPass<GodRaysPass>()->setEnabled(false);
 }
 
+// FILTERS //////////////
 void ofApp::setupFilteringChain()
 {
   currentFilter = 0;
@@ -158,11 +143,10 @@ void ofApp::setupFilteringChain()
   vector<GradientMapColorPoint> colors;
   for (float percent = 0.0; percent <= 1.0; percent += 0.1)
   {
-    colors.push_back(GradientMapColorPoint(ofRandomuf(), ofRandomuf(), ofRandomuf(), percent));
+    colors.push_back(GradientMapColorPoint(ofRandomuf(), 0.0, 0.0, percent));
   }
   filters.push_back(new GradientMapFilter(colors));
 }
-
 void ofApp::advanceFilter()
 {
   currentFilter++;
@@ -171,62 +155,6 @@ void ofApp::advanceFilter()
     currentFilter = 0;
   }
 }
-
-void ofApp::checkMessages()
-{
-  while (receiver.hasWaitingMessages())
-  {
-    ofxOscMessage msg;
-    receiver.getNextMessage(msg);
-
-    if (msg.getAddress() == "/convergence")
-    {
-      post[1]->setEnabled(!post[1]->getEnabled());
-    }
-    if (msg.getAddress() == "/shaker")
-    {
-      post[2]->setEnabled(!post[2]->getEnabled());
-    }
-    if (msg.getAddress() == "/cutslider")
-    {
-      post[3]->setEnabled(!post[3]->getEnabled());
-    }
-    if (msg.getAddress() == "/twist")
-    {
-      post[4]->setEnabled(!post[4]->getEnabled());
-    }
-    if (msg.getAddress() == "/sliderX")
-    {
-      sliderX = msg.getArgAsFloat(0) / 4;
-      filterReseted = false;
-    }
-    if (msg.getAddress() == "/sliderY")
-    {
-      sliderY = msg.getArgAsFloat(0) / 4;
-      filterReseted = false;
-    }
-    if (msg.getAddress() == "/play")
-    {
-      advanceFilter();
-    }
-    if (msg.getAddress() == "/set0")
-    {
-      currentFilter = 0;
-      filterReseted = false;
-    }
-    if (msg.getAddress() == "/set1")
-    {
-      currentFilter = 1;
-      filterReseted = false;
-    }
-    if (msg.getAddress() == "/set2")
-    {
-      currentFilter = 2;
-      filterReseted = false;
-    }
-  }
-}
-
 void ofApp::resetFilter()
 {
   // ofLogNotice() << "sliderX: " << sliderX << " - X: " << sliderX * camDrawWidth;
@@ -258,10 +186,41 @@ void ofApp::resetFilter()
     vector<GradientMapColorPoint> colors;
     for (float percent = 0.0; percent <= 1.0; percent += 0.1)
     {
-      colors.push_back(GradientMapColorPoint(ofRandomuf(), ofRandomuf(), ofRandomuf(), percent));
+      colors.push_back(GradientMapColorPoint(ofRandomuf(), 0.0, 0.0, percent));
     }
     filters[currentFilter] = new GradientMapFilter(colors);
     break;
   }
   filterReseted = true;
+}
+
+// OSC //////////////////
+void ofApp::checkMessages()
+{
+  ofxOscMessage msg;
+  while (receiver.hasWaitingMessages())
+  {
+    receiver.getNextMessage(msg);
+
+    // effects_on/x
+    // record_on/x
+    // sliderX/x /y
+    // sliderY/x /y
+    // sets/x
+    // effects/x
+    // da_ring/x /y /z
+    address = msg.getAddress();
+    value = msg.getArgAsFloat(0);
+
+    if (msg.getAddress() == "/sliderX/x")
+    {
+      sliderX = msg.getArgAsFloat(0) / 4;
+      filterReseted = false;
+    }
+    if (msg.getAddress() == "/sliderY/x")
+    {
+      sliderY = msg.getArgAsFloat(0) / 4;
+      filterReseted = false;
+    }
+  }
 }
