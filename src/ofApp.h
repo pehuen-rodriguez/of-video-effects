@@ -46,6 +46,7 @@ class ofApp : public ofBaseApp{
 
     // OSC //////////////////
     void checkMessages();
+    bool playOn;
     bool effectsOn;
     bool recordOn;
     ofxOscReceiver receiver;

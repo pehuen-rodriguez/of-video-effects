@@ -25,6 +25,7 @@ void ofApp::setup()
 
   receiver.setup(17024);
 
+  playOn = false;
   effectsOn = false;
   recordOn = false;
   ofSetVerticalSync(true);
@@ -40,14 +41,18 @@ void ofApp::update()
 }
 void ofApp::draw()
 {
-  if(effectsOn) {
-    post.begin();
-      filters[currentFilter]->begin();
-        vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
-      filters[currentFilter]->end();
-    post.end();
-  } else {
-    vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
+  ofBackground(ofColor::black);
+
+  if(playOn) {
+    if(effectsOn) {
+      post.begin();
+        filters[currentFilter]->begin();
+          vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
+        filters[currentFilter]->end();
+      post.end();
+    } else {
+      vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
+    }
   }
 }
 void ofApp::keyPressed(int key)
@@ -203,6 +208,7 @@ void ofApp::checkMessages()
   {
     receiver.getNextMessage(msg);
 
+    // play_on/x
     // effects_on/x
     // record_on/x
     // sliderX/x /y
@@ -210,6 +216,9 @@ void ofApp::checkMessages()
     // sets/x
     // effects/x
     // da_ring/x /y /z
+    if (msg.getAddress() == "/play_on/x") {
+      playOn = msg.getArgAsBool(0);
+    }
     if (msg.getAddress() == "/effects_on/x") {
       effectsOn = msg.getArgAsBool(0);
     }
