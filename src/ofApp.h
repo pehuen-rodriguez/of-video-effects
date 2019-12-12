@@ -46,9 +46,9 @@ class ofApp : public ofBaseApp{
 
     // OSC //////////////////
     void checkMessages();
+    bool effectsOn;
+    bool recordOn;
     ofxOscReceiver receiver;
     float sliderX;
     float sliderY;
-    std::string address;
-    float value;
 };

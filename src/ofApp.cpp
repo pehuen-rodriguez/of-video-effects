@@ -6,7 +6,6 @@ void ofApp::setup()
   ofDisableArbTex();
   ofEnableSmoothing();
   ofEnableAlphaBlending();
-  ofSetVerticalSync(true);
 
   camWidth = 1280;
   camHeight = 720;
@@ -26,8 +25,9 @@ void ofApp::setup()
 
   receiver.setup(17024);
 
-  address = "no_address";
-  value = 0.0;
+  effectsOn = false;
+  recordOn = false;
+  ofSetVerticalSync(true);
 }
 void ofApp::update()
 {
@@ -40,14 +40,15 @@ void ofApp::update()
 }
 void ofApp::draw()
 {
-  post.begin();
-    filters[currentFilter]->begin();
-      vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
-    filters[currentFilter]->end();
-  post.end();
-
-  ofDrawBitmapString("For address: " + address, 100, 100);
-  ofDrawBitmapString("Value was: " + ofToString(value), 100, 110);
+  if(effectsOn) {
+    post.begin();
+      filters[currentFilter]->begin();
+        vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
+      filters[currentFilter]->end();
+    post.end();
+  } else {
+    vidGrabber.draw(0, yCamDrawOffset, camDrawWidth, camDrawHeight);
+  }
 }
 void ofApp::keyPressed(int key)
 {
@@ -209,17 +210,44 @@ void ofApp::checkMessages()
     // sets/x
     // effects/x
     // da_ring/x /y /z
-    address = msg.getAddress();
-    value = msg.getArgAsFloat(0);
-
+    if (msg.getAddress() == "/effects_on/x") {
+      effectsOn = msg.getArgAsBool(0);
+    }
+    if (msg.getAddress() == "/record_on/x") {
+      recordOn = msg.getArgAsBool(0);
+    }
     if (msg.getAddress() == "/sliderX/x")
     {
-      sliderX = msg.getArgAsFloat(0) / 4;
+      sliderX = msg.getArgAsFloat(0);
       filterReseted = false;
     }
     if (msg.getAddress() == "/sliderY/x")
     {
-      sliderY = msg.getArgAsFloat(0) / 4;
+      sliderY = msg.getArgAsFloat(0);
+      filterReseted = false;
+    }
+    if (msg.getAddress() == "/sets/x") {
+      for (int idx = 0; idx <= 5; idx += 1)
+      {
+        if (msg.getArgAsInt(idx) == 1) {
+          currentFilter = idx;
+          filterReseted = false;
+        }
+      }
+    }
+    if (msg.getAddress() == "/effects/x")
+    {
+      for (int idx = 0; idx <= 4; idx += 1)
+      {
+        post[idx+1]->setEnabled(msg.getArgAsBool(idx));
+      }
+    }
+    if (msg.getAddress() == "/da_ring/x") {
+      sliderX = msg.getArgAsFloat(0);
+      filterReseted = false;
+    }
+    if (msg.getAddress() == "/da_ring/y") {
+      sliderY = msg.getArgAsFloat(0);
       filterReseted = false;
     }
   }
