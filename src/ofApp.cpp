@@ -3,6 +3,7 @@
 // COMMON ///////////////
 void ofApp::setup()
 {
+  deviceId = 0;
   ofDisableArbTex();
   ofEnableSmoothing();
   ofEnableAlphaBlending();
@@ -16,7 +17,7 @@ void ofApp::setup()
 
   yCamDrawOffset = (camHeight - camDrawHeight) / 2;
 
-  vidGrabber.setDeviceID(1);
+  vidGrabber.setDeviceID(deviceId);
   vidGrabber.setDesiredFrameRate(30);
   vidGrabber.initGrabber(camWidth, camHeight);
 
@@ -25,9 +26,9 @@ void ofApp::setup()
 
   receiver.setup(17024);
 
-  playOn = false;
-  effectsOn = false;
-  recordOn = false;
+  playOn = true;
+  effectsOn = true;
+  recordOn = true;
   ofSetVerticalSync(true);
 }
 void ofApp::update()
@@ -67,7 +68,17 @@ void ofApp::keyPressed(int key)
   // ADVANCE FILTER AND FS //
   if (key == ' ')
   {
-    advanceFilter();
+    vidGrabber.close();
+    if (deviceId == 1)
+    {
+      deviceId = 0;
+    } else
+    {
+      deviceId = 1;
+    }
+    vidGrabber.setDeviceID(deviceId);
+    vidGrabber.setDesiredFrameRate(30);
+    vidGrabber.initGrabber(camWidth, camHeight);
   }
   if (key == 'f')
   {
@@ -206,9 +217,8 @@ void ofApp::checkMessages()
   ofxOscMessage msg;
   while (receiver.hasWaitingMessages())
   {
-    receiver.getNextMessage(msg);
-
     // play_on/x
+    // switch_camera/x
     // effects_on/x
     // record_on/x
     // sliderX/x /y
@@ -216,48 +226,42 @@ void ofApp::checkMessages()
     // sets/x
     // effects/x
     // da_ring/x /y /z
-    if (msg.getAddress() == "/play_on/x") {
+    receiver.getNextMessage(msg);
+    address = msg.getAddress();
+
+    if (address == "/switch_camera/x") {
+      deviceId = msg.getArgAsBool(0) ? 0 : 1;
+      vidGrabber.close();
+      vidGrabber.setDeviceID(deviceId);
+      vidGrabber.setDesiredFrameRate(30);
+      vidGrabber.initGrabber(camWidth, camHeight);
+    } else if (address == "/play_on/x")
       playOn = msg.getArgAsBool(0);
-    }
-    if (msg.getAddress() == "/effects_on/x") {
+    else if (address == "/effects_on/x")
       effectsOn = msg.getArgAsBool(0);
-    }
-    if (msg.getAddress() == "/record_on/x") {
+    else if (address == "/record_on/x")
       recordOn = msg.getArgAsBool(0);
-    }
-    if (msg.getAddress() == "/sliderX/x")
-    {
+    else if (address == "/sliderX/x" || address == "/da_ring/x") {
       sliderX = msg.getArgAsFloat(0);
       filterReseted = false;
-    }
-    if (msg.getAddress() == "/sliderY/x")
-    {
+    } else if (address == "/da_ring/y" || address == "/sliderY/x") {
       sliderY = msg.getArgAsFloat(0);
       filterReseted = false;
-    }
-    if (msg.getAddress() == "/sets/x") {
+    } else if (address == "/sets/x") {
       for (int idx = 0; idx <= 5; idx += 1)
       {
-        if (msg.getArgAsInt(idx) == 1) {
+        if (msg.getArgAsBool(idx))
+        {
           currentFilter = idx;
           filterReseted = false;
+          break;
         }
       }
-    }
-    if (msg.getAddress() == "/effects/x")
-    {
+    } else if (address == "/effects/x") {
       for (int idx = 0; idx <= 4; idx += 1)
       {
         post[idx+1]->setEnabled(msg.getArgAsBool(idx));
       }
-    }
-    if (msg.getAddress() == "/da_ring/x") {
-      sliderX = msg.getArgAsFloat(0);
-      filterReseted = false;
-    }
-    if (msg.getAddress() == "/da_ring/y") {
-      sliderY = msg.getArgAsFloat(0);
-      filterReseted = false;
     }
   }
 }

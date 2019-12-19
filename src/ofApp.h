@@ -23,6 +23,7 @@ class ofApp : public ofBaseApp{
     float videoAspectRatio;
     float xCamDrawOffset;
     float yCamDrawOffset;
+    int deviceId;
 
     // PROCESSES ////////////
     void setupProcessingChain();
@@ -45,11 +46,12 @@ class ofApp : public ofBaseApp{
     int currentFilter;
 
     // OSC //////////////////
+    ofxOscReceiver receiver;
     void checkMessages();
     bool playOn;
     bool effectsOn;
     bool recordOn;
-    ofxOscReceiver receiver;
     float sliderX;
     float sliderY;
+    string address;
 };
