@@ -87,11 +87,26 @@ void ofApp::keyPressed(int key)
 
   // TOGGLE FXS /////////////
   if (key == 'a')
-    myGlitch.toggleFx(OFXPOSTGLITCH_CONVERGENCE);
+  {
+    vidGrabber.close();
+    vidGrabber.setDeviceID(0);
+    vidGrabber.setDesiredFrameRate(30);
+    vidGrabber.initGrabber(camWidth, camHeight);
+  }
   if (key == 's')
-    myGlitch.toggleFx(OFXPOSTGLITCH_GLOW);
+  {
+    vidGrabber.close();
+    vidGrabber.setDeviceID(1);
+    vidGrabber.setDesiredFrameRate(30);
+    vidGrabber.initGrabber(camWidth, camHeight);
+  }
   if (key == 'd')
-    myGlitch.toggleFx(OFXPOSTGLITCH_SHAKER);
+  {
+    vidGrabber.close();
+    vidGrabber.setDeviceID(2);
+    vidGrabber.setDesiredFrameRate(30);
+    vidGrabber.initGrabber(camWidth, camHeight);
+  }
   if (key == 'g')
     myGlitch.toggleFx(OFXPOSTGLITCH_TWIST);
   if (key == 'h')
@@ -230,7 +245,7 @@ void ofApp::checkMessages()
     address = msg.getAddress();
 
     if (address == "/switch_camera/x") {
-      deviceId = msg.getArgAsBool(0) ? 0 : 1;
+      deviceId = msg.getArgAsBool(0) ? 1 : 2;
       vidGrabber.close();
       vidGrabber.setDeviceID(deviceId);
       vidGrabber.setDesiredFrameRate(30);
